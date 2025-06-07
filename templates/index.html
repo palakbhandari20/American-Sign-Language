@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ASL Hand Sign Recognition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>🤟 ASL Hand Sign Recognition</h1>
+    <div class="main-container">
+        <div id="video-container">
+            <img src="{{ url_for('video_feed') }}" alt="Video Stream">
+        </div>
+
+        <div class="info-container">
+            <div id="prediction-box">
+                Predicted Letter: <span id="prediction">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lastSpoken = "";
+
+        function speak(text) {
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = "en-US";
+            window.speechSynthesis.speak(msg);
+        }
+
+        function fetchPrediction() {
+            fetch('/get_prediction')
+                .then(response => response.json())
+                .then(data => {
+                    const prediction = data.prediction;
+                    document.getElementById('prediction').textContent = prediction;
+
+                    if (prediction !== "nothing" && prediction !== lastSpoken) {
+                        speak(prediction);
+                        lastSpoken = prediction;
+                    }
+
+                    if (prediction === "nothing") {
+                        lastSpoken = "";
+                    }
+                });
+        }
+
+        setInterval(fetchPrediction, 1000);
+    </script>
+</body>
+</html>
